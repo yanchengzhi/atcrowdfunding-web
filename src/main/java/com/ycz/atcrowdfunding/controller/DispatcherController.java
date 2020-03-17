@@ -22,7 +22,7 @@ import com.ycz.atcrowdfunding.service.UserService;
 /**
  * 作为控制用户登录的控制器
  * 
- * @author Administrator
+ * @author Administrato
  *
  */
 @Controller
