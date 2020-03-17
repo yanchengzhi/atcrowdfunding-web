@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC 
+"-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--业务 sql映射文件 -->
+<mapper namespace="com.ycz.atcrowdfunding.dao.RoleDao">
+	<!-- 分页查询 -->
+	<select id="queryRolesPaged"
+		resultType="com.ycz.atcrowdfunding.pojo.Role" parameterType="map">
+		<!-- 可能要用到模糊查询，所以用动态SQL -->
+		select * from role
+		<where>
+			<if test="queryText!=null">
+				and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		order by createTime desc
+		limit #{start},#{size}
+	</select>
+	<!-- 查询总的记录条数 -->
+	<select id="countRoles" resultType="int" parameterType="map">
+	   select count(*) from role
+	   		<where>
+			<if test="queryText!=null">
+				and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	<!-- 批量删除 -->
+	<delete id="deleteRoles" parameterType="map">
+	  delete from role where id in
+	  <!-- 用动态SQL遍历 -->
+	  <foreach collection="idList" item="roleId" open="(" close=")" separator=",">
+	     #{roleId}
+	  </foreach>
+	</delete>
+	
+	<!-- 分配许可信息 -->
+	<insert id="insertRolePermissions" parameterType="map">
+	   insert into role_permission (roleId,permissionId)
+	   values
+	   <foreach collection="permissionIds" item="permissionId" separator=",">
+	     (#{roleId},#{permissionId})
+	   </foreach>
+	</insert>
+	
+	<!-- 删除已分配的许可信息 -->
+	<delete id="deleteRolePermissions" parameterType="map">
+	   delete from role_permission where roleId=#{roleId}
+	</delete>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

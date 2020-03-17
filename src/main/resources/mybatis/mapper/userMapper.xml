@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC 
+"-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--业务 sql映射文件 -->
+<mapper namespace="com.ycz.atcrowdfunding.dao.UserDao">
+	<!-- 这里的id要和接口的方法名一样 -->
+	<select id="queryUsersPaged"
+		resultType="com.ycz.atcrowdfunding.pojo.User" parameterType="map">
+		<!-- 可能要用到模糊查询，所以用动态SQL -->
+		select * from user
+		<where>
+			<if test="queryText!=null">
+				and username like concat('%',#{queryText},'%')
+			</if>
+			<if test="queryText!=null">
+				or email like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		order by createTime desc
+		limit #{start},#{size}
+	</select>
+
+    <!-- 查询总记录条数 -->
+	<select id="countUsersPaged" resultType="int"
+		parameterType="map">
+		select count(*) from user
+		<where>
+			<if test="queryText!=null">
+				and username like concat('%',#{queryText},'%')
+			</if>
+			<if test="queryText!=null">
+				or email like concat('%',#{queryText},'%')
+			</if>			
+		</where>
+	</select>
+	
+	<!-- 添加用户 -->
+	<insert id="insertUser" parameterType="com.ycz.atcrowdfunding.pojo.User">
+	   insert into user(username,loginName,password,email,createTime)
+	   values(#{username},#{loginName},#{password},#{email},#{createTime})
+	</insert>
+	
+	<!-- 修改用户 -->
+	<update id="updateUser" parameterType="com.ycz.atcrowdfunding.pojo.User">
+	   update user set loginName=#{loginName},username=#{username},email=#{email}
+	   where id=#{id}
+	</update>
+	
+	<!-- 删除用户 -->
+	<delete id="deleteUserById" parameterType="int">
+	   delete from user where id=#{id}
+	</delete>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteUsers" parameterType="map">
+	   <!-- 因为ID不确定，这里用动态SQL来循环遍历id集合 -->
+	   delete from user where id in
+	   <foreach collection="idList" item="userId" open="(" close=")" separator=",">
+	   #{userId}
+	   </foreach>
+	</delete>
+	
+	<!-- 添加用户角色分配 -->
+	<insert id="insertUserRoles" parameterType="map">
+	  insert into user_roles (userId,roleId) values
+	  <!-- 使用动态SQL遍历 -->
+	  <foreach collection="roleIds" item="roleId" separator=",">
+	    (#{userId},#{roleId})
+	  </foreach>
+	</insert>
+	
+	<!-- 删除用户角色分配 -->
+	<delete id="deleteUserRoles" parameterType="map">
+	   delete from user_roles where userId=#{userId} and roleId in
+	<!-- 使用动态SQL遍历 -->
+	   <foreach collection="roleIds2" item="roleId" open="(" close=")" separator=",">
+	     #{roleId}
+	   </foreach>
+	</delete>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

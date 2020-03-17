@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC 
+"-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--业务 sql映射文件 -->
+<mapper namespace="com.ycz.atcrowdfunding.dao.PermissionDao">
+	<!-- 增加节点 -->
+	<insert id="insertPermission">
+		insert into permission(name,pid,url)
+		values(#{name},#{pId},#{url})
+	</insert>
+
+	<!-- 修改节点 -->
+	<update id="updatePermission">
+		update permission set name=#{name},url=#{url}
+		where id=#{id}
+	</update>
+
+	<!-- 查询登录用户权限信息 -->
+	<select id="queryPermissionsByUser"
+		resultType="com.ycz.atcrowdfunding.pojo.Permission">
+		select * from permission
+		where id in(
+		select permissionId from role_permission
+		where roleId in(
+		select roleId from user_roles
+		where userId = #{id}
+		)
+		)
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

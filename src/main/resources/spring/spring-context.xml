@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop 
+    http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+    http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/tx 
+    http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!-- 开启自动包扫描，扫描注解的类 -->
+    <context:component-scan base-package="com.ycz.*">
+       <!-- 添加黑名单，扫描时忽略controller层的注解 -->
+       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    
+    <!-- 加载数据库连接信息配置文件 -->
+    <context:property-placeholder 
+    location="classpath:com/ycz/atcrowdfunding/conf/dbconf.properties"
+    file-encoding="utf-8" order="1" ignore-resource-not-found="false"
+    ignore-unresolvable="false"
+    />
+    
+    <!-- 配置c3p0数据源,获取数据库连接信息 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+       <property name="jdbcUrl" value="${jdbc_url}"></property>
+       <property name="driverClass" value="${jdbc_driverClass}"></property>
+       <property name="user" value="${jdbc_username}"></property>
+       <property name="password" value="${jdbc_password}"></property>
+    </bean>
+    
+     <!-- 在spring上下文中集成MyBatis框架 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+       <!-- 加载核心配置文件 -->
+       <property name="configLocation" value="classpath:mybatis/config.xml"></property>
+       <property name="dataSource" ref="dataSource"></property>
+       <property name="mapperLocations">
+          <list>
+             <value>classpath:mybatis/mapper/*.xml</value>
+          </list>
+       </property>
+    </bean>
+    
+    <!-- 为mapper映射器接口文件设置包路径 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+       <property name="basePackage" value="com.ycz.atcrowdfunding.**.dao"></property>
+    </bean>
+    
+    <!-- 配置事务处理，保持数据的一致性 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+       <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+       <tx:attributes>
+           <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+           <tx:method name="query*" read-only="true" />
+       </tx:attributes>
+    </tx:advice>
+    <!-- 事务切入点 -->
+    <aop:config>
+       <aop:advisor advice-ref="transactionAdvice" 
+       pointcut="execution(* com.ycz..*Service.*(..))"/>
+    </aop:config>
+</beans>
+
+
+
+
+
